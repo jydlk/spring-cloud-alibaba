@@ -16,27 +16,23 @@
 
 package org.springframework.cloud.alibaba.nacos;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Properties;
-
-import javax.annotation.PostConstruct;
-
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.env.Environment;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
@@ -46,11 +42,14 @@ import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
  *
  * @author leijuan
  * @author xiaojing
+ * @author pbting
  */
-@ConfigurationProperties("spring.cloud.nacos.config")
+@ConfigurationProperties(NacosConfigProperties.PREFIX)
 public class NacosConfigProperties {
 
-	private static final Logger LOGGER = LoggerFactory
+	public static final String PREFIX = "spring.cloud.nacos.config";
+
+	private static final Logger log = LoggerFactory
 			.getLogger(NacosConfigProperties.class);
 
 	/**
@@ -113,20 +112,25 @@ public class NacosConfigProperties {
 	 */
 	private String clusterName;
 
-	@Value("${spring.application.name}")
 	private String name;
 
-	private String[] activeProfiles;
+	/**
+	 * the dataids for configurable multiple shared configurations , multiple separated by
+	 * commas .
+	 */
+	private String sharedDataids;
+
+	/**
+	 * refreshable dataids , multiple separated by commas .
+	 */
+	private String refreshableDataids;
+
+	/**
+	 * a set of extended configurations .
+	 */
+	private List<Config> extConfig;
 
 	private ConfigService configService;
-
-	@Autowired
-	private Environment environment;
-
-	@PostConstruct
-	public void init() {
-		this.activeProfiles = environment.getActiveProfiles();
-	}
 
 	// todo sts support
 
@@ -230,8 +234,71 @@ public class NacosConfigProperties {
 		return name;
 	}
 
-	public String[] getActiveProfiles() {
-		return activeProfiles;
+	public String getSharedDataids() {
+		return sharedDataids;
+	}
+
+	public void setSharedDataids(String sharedDataids) {
+		this.sharedDataids = sharedDataids;
+	}
+
+	public String getRefreshableDataids() {
+		return refreshableDataids;
+	}
+
+	public void setRefreshableDataids(String refreshableDataids) {
+		this.refreshableDataids = refreshableDataids;
+	}
+
+	public List<Config> getExtConfig() {
+		return extConfig;
+	}
+
+	public void setExtConfig(List<Config> extConfig) {
+		this.extConfig = extConfig;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public static class Config {
+		/**
+		 * the data id of extended configuration
+		 */
+		private String dataId;
+		/**
+		 * the group of extended configuration, the default value is DEFAULT_GROUP
+		 */
+		private String group = "DEFAULT_GROUP";
+		/**
+		 * whether to support dynamic refresh, the default does not support .
+		 */
+		private boolean refresh = false;
+
+		public String getDataId() {
+			return dataId;
+		}
+
+		public void setDataId(String dataId) {
+			this.dataId = dataId;
+		}
+
+		public String getGroup() {
+			return group;
+		}
+
+		public void setGroup(String group) {
+			this.group = group;
+		}
+
+		public boolean isRefresh() {
+			return refresh;
+		}
+
+		public void setRefresh(boolean refresh) {
+			this.refresh = refresh;
+		}
 	}
 
 	@Override
@@ -243,7 +310,8 @@ public class NacosConfigProperties {
 				+ ", namespace='" + namespace + '\'' + ", accessKey='" + accessKey + '\''
 				+ ", secretKey='" + secretKey + '\'' + ", contextPath='" + contextPath
 				+ '\'' + ", clusterName='" + clusterName + '\'' + ", name='" + name + '\''
-				+ ", activeProfiles=" + Arrays.toString(activeProfiles) + '}';
+				+ ", sharedDataids='" + sharedDataids + '\'' + ", refreshableDataids='"
+				+ refreshableDataids + '\'' + ", extConfig=" + extConfig + '}';
 	}
 
 	public ConfigService configServiceInstance() {
@@ -260,13 +328,23 @@ public class NacosConfigProperties {
 		properties.put(SECRET_KEY, Objects.toString(this.secretKey, ""));
 		properties.put(CONTEXT_PATH, Objects.toString(this.contextPath, ""));
 		properties.put(CLUSTER_NAME, Objects.toString(this.clusterName, ""));
-		properties.put(ENDPOINT, Objects.toString(this.endpoint, ""));
+
+		String endpoint = Objects.toString(this.endpoint, "");
+		if (endpoint.contains(":")) {
+			int index = endpoint.indexOf(":");
+			properties.put(ENDPOINT, endpoint.substring(0, index));
+			properties.put(ENDPOINT_PORT, endpoint.substring(index + 1));
+		}
+		else {
+			properties.put(ENDPOINT, endpoint);
+		}
+
 		try {
 			configService = NacosFactory.createConfigService(properties);
 			return configService;
 		}
 		catch (Exception e) {
-			LOGGER.error("create config service error!properties={},e=,", this, e);
+			log.error("create config service error!properties={},e=,", this, e);
 			return null;
 		}
 	}

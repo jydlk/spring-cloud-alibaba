@@ -16,15 +16,13 @@
 
 package org.springframework.cloud.alibaba.nacos.ribbon;
 
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.AbstractServerList;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.alibaba.nacos.NacosDiscoveryProperties;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.alibaba.nacos.api.naming.pojo.Instance;
 
 /**
  * @author xiaojing
@@ -32,16 +30,12 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
  */
 public class NacosServerList extends AbstractServerList<NacosServer> {
 
-	@Autowired
 	private NacosDiscoveryProperties discoveryProperties;
 
 	private String serviceId;
 
-	public NacosServerList() {
-	}
-
-	public NacosServerList(String serviceId) {
-		this.serviceId = serviceId;
+	public NacosServerList(NacosDiscoveryProperties discoveryProperties) {
+		this.discoveryProperties = discoveryProperties;
 	}
 
 	@Override
@@ -57,7 +51,7 @@ public class NacosServerList extends AbstractServerList<NacosServer> {
 	private List<NacosServer> getServers() {
 		try {
 			List<Instance> instances = discoveryProperties.namingServiceInstance()
-					.getAllInstances(serviceId);
+					.selectInstances(serviceId, true);
 			return instancesToServerList(instances);
 		}
 		catch (Exception e) {
@@ -68,11 +62,12 @@ public class NacosServerList extends AbstractServerList<NacosServer> {
 	}
 
 	private List<NacosServer> instancesToServerList(List<Instance> instances) {
-		List<NacosServer> result = new ArrayList<>(instances.size());
+		List<NacosServer> result = new ArrayList<>();
+		if (null == instances) {
+			return result;
+		}
 		for (Instance instance : instances) {
-			if (instance.isHealthy()) {
-				result.add(new NacosServer(instance));
-			}
+			result.add(new NacosServer(instance));
 		}
 
 		return result;
