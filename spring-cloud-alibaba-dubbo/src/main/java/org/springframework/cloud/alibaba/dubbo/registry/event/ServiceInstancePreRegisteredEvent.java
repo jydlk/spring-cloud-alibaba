@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cloud.alibaba.dubbo.service;
+package org.springframework.cloud.alibaba.dubbo.registry.event;
 
-import org.springframework.cloud.alibaba.dubbo.metadata.ServiceRestMetadata;
-
-import java.util.Set;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.serviceregistry.Registration;
+import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * Dubbo Metadata Configuration Service
+ * The before-{@link ServiceRegistry#register(Registration) register} event for {@link ServiceInstance}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  */
-public interface DubboMetadataConfigService {
+public class ServiceInstancePreRegisteredEvent extends ApplicationEvent {
 
-    /**
-     * Get The json content of {@link ServiceRestMetadata} {@link Set}
-     *
-     * @return the non-null String
-     */
-    String getServiceRestMetadata();
+    public ServiceInstancePreRegisteredEvent(Registration source) {
+        super(source);
+    }
+
+    @Override
+    public Registration getSource() {
+        return (Registration) super.getSource();
+    }
 }

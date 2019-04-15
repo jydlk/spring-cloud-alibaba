@@ -14,40 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cloud.alibaba.dubbo.registry.handler;
+package org.springframework.cloud.alibaba.dubbo.service;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.cloud.alibaba.dubbo.metadata.ServiceRestMetadata;
+
+import java.util.Set;
 
 /**
- * Dubbo {@link Registry} Spring Cloud Service Id Builder
+ * Dubbo Metadata Service
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  */
-public interface DubboRegistryServiceIdHandler {
+public interface DubboMetadataService {
 
     /**
-     * Supports the specified id of Spring Cloud Service or not
+     * Get The json content of {@link ServiceRestMetadata} {@link Set}
      *
-     * @param serviceId the specified id of Spring Cloud Service
-     * @return if supports, return <code>true</code>, or <code>false</code>
+     * @return <code>null</code> if present
      */
-    boolean supports(String serviceId);
-
-    /**
-     * Creates the id of Spring Cloud Service
-     *
-     * @param url The Dubbo's {@link URL}
-     * @return non-null
-     */
-    String createServiceId(URL url);
-
-    /**
-     * The instance if {@link ConfigurableApplicationContext} .
-     *
-     * @return non-null
-     */
-    ConfigurableApplicationContext getContext();
-
+    String getServiceRestMetadata();
 }

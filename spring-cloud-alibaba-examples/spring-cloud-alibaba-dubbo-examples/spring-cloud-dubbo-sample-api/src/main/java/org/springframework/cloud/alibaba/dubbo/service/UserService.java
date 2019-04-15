@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.cloud.alibaba.dubbo.registry;
+package org.springframework.cloud.alibaba.dubbo.service;
 
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.serviceregistry.Registration;
-import org.springframework.context.ConfigurableApplicationContext;
+import java.util.Collection;
 
 /**
- * Default {@link RegistrationFactory}
+ * {@link User} Service
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  */
-public class DefaultRegistrationFactory extends AbstractRegistrationFactory<Registration> {
+public interface UserService {
 
-    @Override
-    public Registration create(ServiceInstance serviceInstance, ConfigurableApplicationContext applicationContext) {
-        return new DelegatingRegistration(serviceInstance);
-    }
+    boolean save(User user);
+
+    boolean remove(Long userId);
+
+    Collection<User> findAll();
 }
