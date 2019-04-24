@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-alibaba</artifactId>
-        <version>2.1.0.BUILD-SNAPSHOT</version>
+        <version>0.9.1.BUILD-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -28,10 +28,10 @@
         <module>ans-example/ans-consumer-feign-example</module>
         <module>ans-example/ans-consumer-ribbon-example</module>
         <module>ans-example/ans-provider-example</module>
-        <module>fescar-example/business-service</module>
-        <module>fescar-example/order-service</module>
-        <module>fescar-example/storage-service</module>
-        <module>fescar-example/account-service</module>
+        <module>seata-example/business-service</module>
+        <module>seata-example/order-service</module>
+        <module>seata-example/storage-service</module>
+        <module>seata-example/account-service</module>
         <module>acm-example/acm-local-example</module>
         <module>rocketmq-example/rocketmq-consume-example</module>
         <module>rocketmq-example/rocketmq-produce-example</module>
